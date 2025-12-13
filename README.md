@@ -1,4 +1,8 @@
 ﻿# SNIIC 2.0 — Arquitetura Completa com Assistente Cultural (IA + RAG)
+ O **SNIIC 2.0 (Sistema Nacional de Informações e Indicadores Culturais)** é uma reconstrução moderna da plataforma nacional de dados culturais, unificando registros, indicadores, metadados e fontes federativas em uma arquitetura escalável, padronizada e interoperável.
+
+Além da reativação dos fluxos de ingestão, limpeza e governança de dados, esta proposta inclui uma inovação estratégica: o **Assistente Cultural Nacional**, um chatbot baseado em IA que utiliza técnicas de RAG (Retrieval-Augmented Generation) para responder perguntas do cidadão diretamente a partir da base integrada.
+
 
 Semana 1-4:   Fundação (DB, Modelagem, Setup)
 Semana 5-8:   ETL Pipeline (Ingestão + Embeddings)
@@ -13,7 +17,7 @@ Semana 25:    Deploy Produção (Soft Launch)
 
 ---
 
-## 7. DECISÃO FINAL: POSTGRESQL vs BANCO VETORIAL
+## POSTGRESQL
 
 ### ✅ **RECOMENDAÇÃO: Começar com PostgreSQL + pgvector**
 
@@ -38,11 +42,9 @@ Semana 25:    Deploy Produção (Soft Launch)
 **Migração Gradual:**
 PostgreSQL → Hybrid (Postgres + Qdrant) → Full Vector DB
 
-Você pode manter dados estruturados no Postgres e migrar apenas vetores para Qdrant/Milvus, mantendo o melhor dos dois mundos.
+Manter dados estruturados no Postgres e migrar apenas vetores para Qdrant/Milvus.
 
 ---
-
-## 8. PRÓXIMOS PASSOS IMEDIATOS
 
 ### Semana 1 - Action Items:
 
@@ -74,21 +76,9 @@ Você pode manter dados estruturados no Postgres e migrar apenas vetores para Qd
 
 ---
 
-## 9. RECURSOS DE ESTUDO RECOMENDADOS
+--
 
-### Documentação Oficial:
-- [pgvector GitHub](https://github.com/pgvector/pgvector)
-- [LangChain SQL Agent](https://python.langchain.com/docs/use_cases/sql)
-- [LangGraph](https://langchain-ai.github.io/langgraph/)
-- [RAGAS Evaluation](https://docs.ragas.io/)
-
-### Tutoriais Práticos:
-- [Building RAG with PostgreSQL](https://neon.tech/blog/rag-on-postgres)
-- [Agentic RAG Architecture](https://www.deeplearning.ai/short-courses/building-agentic-rag-with-llamaindex/)
-
----
-
-## 10. CONCLUSÃO
+## CONCLUSÃO
 
 O projeto SNIIC 2.0 é ambicioso mas absolutamente viável com a stack recomendada. A escolha de **PostgreSQL + pgvector** como base unificada oferece:
 
@@ -106,21 +96,7 @@ O Agentic RAG com Router + Vector Search + SQL Agent permitirá responder tanto 
 3. System prompts bem elaborados (comportamento do LLM)
 4. Avaliação contínua (métricas de qualidade)
 
-Você está construindo infraestrutura de IA de interesse público. Faça com excelência! 🇧🇷
-
 ---
-
-**Pronto para começar? Posso ajudar com:**
-- Scripts Python específicos de qualquer fase
-- Exemplos de system prompts otimizados
-- Queries SQL para análises específicas
-- Arquitetura detalhada de componentesClaude is AI and can make mistakes. Please double-check responses.
-
-## Visão Geral
-
-O **SNIIC 2.0 (Sistema Nacional de Informações e Indicadores Culturais)** é uma reconstrução moderna da plataforma nacional de dados culturais, unificando registros, indicadores, metadados e fontes federativas em uma arquitetura escalável, padronizada e interoperável.
-
-Além da reativação dos fluxos de ingestão, limpeza e governança de dados, esta proposta inclui uma inovação estratégica: o **Assistente Cultural Nacional**, um chatbot baseado em IA que utiliza técnicas de RAG (Retrieval-Augmented Generation) para responder perguntas do cidadão diretamente a partir da base integrada.
 
 ---
 .......FALTA !...... (LQMC)
@@ -369,6 +345,7 @@ MIT (pode ser ajustada conforme orientação do MinC).
 
 Coordenação-Geral de Informações e Indicadores Culturais (CGIIC)
 Ministério da Cultura
+
 
 
 
