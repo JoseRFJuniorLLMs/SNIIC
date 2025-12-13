@@ -1,5 +1,121 @@
 ﻿# SNIIC 2.0 — Arquitetura Completa com Assistente Cultural (IA + RAG)
 
+Semana 1-4:   Fundação (DB, Modelagem, Setup)
+Semana 5-8:   ETL Pipeline (Ingestão + Embeddings)
+Semana 9-12:  RAG Core (Vector Search + SQL Agent + Router)
+Semana 13-16: API + Frontend MVP
+Semana 17-20: Otimização + Testes + Métricas
+Semana 21-22: Deploy Staging
+Semana 23-24: Testes com usuários piloto
+Semana 25:    Deploy Produção (Soft Launch)
+
+**Total: ~6 meses para MVP robusto**
+
+---
+
+## 7. DECISÃO FINAL: POSTGRESQL vs BANCO VETORIAL
+
+### ✅ **RECOMENDAÇÃO: Começar com PostgreSQL + pgvector**
+
+**Razões:**
+
+1. **Simplicidade**: Uma única base de dados = menos complexidade operacional
+2. **Busca Híbrida Native**: Filtros SQL + vetorial na mesma query
+3. **Custo**: Sem serviço adicional pago
+4. **Governança**: Dados centralizados, auditoria simplificada
+5. **Time-to-Market**: Setup mais rápido
+
+### 🔄 **Quando Migrar para Banco Vetorial Dedicado:**
+
+**Gatilhos de Migração:**
+
+- [ ] Volume > 50 milhões de documentos
+- [ ] Latência média > 2 segundos (consistente)
+- [ ] Throughput > 10k queries/segundo
+- [ ] Necessidade de escalabilidade horizontal agressiva
+- [ ] Budget disponível para DevOps especializado
+
+**Migração Gradual:**
+PostgreSQL → Hybrid (Postgres + Qdrant) → Full Vector DB
+
+Você pode manter dados estruturados no Postgres e migrar apenas vetores para Qdrant/Milvus, mantendo o melhor dos dois mundos.
+
+---
+
+## 8. PRÓXIMOS PASSOS IMEDIATOS
+
+### Semana 1 - Action Items:
+
+1. [ ] **Definir ambiente de desenvolvimento**
+   - Cloud provider (AWS/GCP/Azure)
+   - Provisionar PostgreSQL
+   - Configurar repositório Git
+
+2. [ ] **Inventariar fontes de dados**
+   - Listar todos PDFs, planilhas, APIs
+   - Documentar estrutura de cada fonte
+   - Definir prioridades de ingestão
+
+3. [ ] **Configurar API do Gemini**
+   - Obter API key
+   - Testar chamadas básicas
+   - Definir rate limits
+
+4. [ ] **Montar equipe/papéis**
+   - Engenheiro de Dados (ETL)
+   - Desenvolvedor Backend (API)
+   - Desenvolvedor Frontend (se necessário)
+   - Data Scientist (métricas/avaliação)
+
+5. [ ] **Definir casos de uso prioritários**
+   - Top 10 perguntas que o sistema deve responder
+   - Criar ground truth para essas perguntas
+   - Usar como benchmark de sucesso
+
+---
+
+## 9. RECURSOS DE ESTUDO RECOMENDADOS
+
+### Documentação Oficial:
+- [pgvector GitHub](https://github.com/pgvector/pgvector)
+- [LangChain SQL Agent](https://python.langchain.com/docs/use_cases/sql)
+- [LangGraph](https://langchain-ai.github.io/langgraph/)
+- [RAGAS Evaluation](https://docs.ragas.io/)
+
+### Tutoriais Práticos:
+- [Building RAG with PostgreSQL](https://neon.tech/blog/rag-on-postgres)
+- [Agentic RAG Architecture](https://www.deeplearning.ai/short-courses/building-agentic-rag-with-llamaindex/)
+
+---
+
+## 10. CONCLUSÃO
+
+O projeto SNIIC 2.0 é ambicioso mas absolutamente viável com a stack recomendada. A escolha de **PostgreSQL + pgvector** como base unificada oferece:
+
+✅ Menor complexidade operacional  
+✅ Busca híbrida poderosa (crucial para dados governamentais)  
+✅ Custo controlado  
+✅ Governança simplificada  
+✅ Time-to-market mais rápido  
+
+O Agentic RAG com Router + Vector Search + SQL Agent permitirá responder tanto perguntas conceituais (leis, regras) quanto analíticas (valores, estatísticas), tornando o assistente verdadeiramente útil para cidadãos e gestores.
+
+**Sucesso do projeto dependerá de:**
+1. Qualidade da engenharia de dados (ETL robusto)
+2. Curadoria dos metadados (classificações corretas)
+3. System prompts bem elaborados (comportamento do LLM)
+4. Avaliação contínua (métricas de qualidade)
+
+Você está construindo infraestrutura de IA de interesse público. Faça com excelência! 🇧🇷
+
+---
+
+**Pronto para começar? Posso ajudar com:**
+- Scripts Python específicos de qualquer fase
+- Exemplos de system prompts otimizados
+- Queries SQL para análises específicas
+- Arquitetura detalhada de componentesClaude is AI and can make mistakes. Please double-check responses.
+
 ## Visão Geral
 
 O **SNIIC 2.0 (Sistema Nacional de Informações e Indicadores Culturais)** é uma reconstrução moderna da plataforma nacional de dados culturais, unificando registros, indicadores, metadados e fontes federativas em uma arquitetura escalável, padronizada e interoperável.
@@ -156,6 +272,93 @@ Proposta de inovação integrada ao SNIIC 2.0.
 
 ---
 
+Checklist Extração:
+
+ Implementar extração de PDFs
+ Implementar extração de Excel/CSV
+ Implementar extração de Word (.docx)
+ Implementar consumo de APIs externas
+ Adicionar tratamento de erros e logs
+ Criar testes unitários para cada ingressor
+
+Processamento e Limpeza
+
+ Normalização de Texto
+ Remover caracteres especiais
+ Normalizar espaços e quebras de linha
+ Corrigir encoding (UTF-8)
+ Identificar e preservar estruturas (tabelas, listas)
+ Extração de Metadados
+ Extrair datas de documentos
+ Identificar tipo de documento (regex patterns)
+ Extrair referências legais (Lei X/YYYY)
+ Identificar localização geográfica
+ Validação de Qualidade
+ Chunks muito pequenos (< 100 chars) → descartar ou mesclar
+ Detecção de chunks duplicados
+ Verificação de encoding corrompido
+
+Checklist Embeddings:
+
+ Escolher modelo de embedding
+ Testar qualidade em português jurídico
+ Benchmark de velocidade
+ Definir dimensão do vetor (768 vs 1024)
+ Implementar geração em batch (eficiência)
+ Adicionar cache de embeddings (evitar reprocessamento)
+ Implementar retry logic para falhas
+ Monitorar uso de memória
+
+ Checklist Carregamento:
+
+ Implementar bulk insert (não um por um!)
+ Adicionar detecção de duplicatas (hash)
+ Implementar upsert logic
+ Adicionar transações (rollback em erro)
+ Logging detalhado de cada carga
+ Métricas: tempo de carga, registros inseridos/falhados
+
+ Checklist Busca Vetorial:
+
+ Implementar busca básica por similaridade
+ Adicionar filtros de metadados (tipo, UF, área)
+ Implementar busca híbrida (Sparse + Dense)
+ Adicionar threshold de similaridade mínima
+ Implementar cache de queries frequentes
+ Logging de todas as buscas (analytics)
+
+ Checklist SQL Agent:
+
+ Configurar LLM (Gemini 1.5 Flash recomendado)
+ Criar system prompt robusto com:
+ Exemplos few-shot (vocabulário MinC)
+ Regras de segurança (READ-ONLY)
+ Mapeamento de termos leigos → colunas SQL
+ Implementar sanitização de queries
+ Adicionar retry logic (3 tentativas)
+ Implementar self-correction (se SQL falhar)
+ Logging de todas queries geradas
+ Testes com perguntas complexas
+
+ Checklist Router:
+
+ Implementar classificação de intenção
+ Testar com 100+ perguntas variadas
+ Adicionar fallback (se incerto, usar ambas)
+ Implementar chain-of-thought reasoning
+ Logging de todas decisões de roteamento
+ Métricas: taxa de acerto do router
+
+ Checklist Reranker:
+
+ Escolher modelo de reranking
+ Integrar após busca vetorial inicial
+ Benchmark: comparar relevância com/sem reranker
+ Otimizar threshold de reranking score
+ Monitorar impacto na latência
+
+ 
+ 
 ## Licença
 
 MIT (pode ser ajustada conforme orientação do MinC).
@@ -166,6 +369,7 @@ MIT (pode ser ajustada conforme orientação do MinC).
 
 Coordenação-Geral de Informações e Indicadores Culturais (CGIIC)
 Ministério da Cultura
+
 
 
 
