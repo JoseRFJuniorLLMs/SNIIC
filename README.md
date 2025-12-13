@@ -76,10 +76,6 @@ Manter dados estruturados no Postgres e migrar apenas vetores para Qdrant/Milvus
 
 ---
 
---
-
-## CONCLUSÃO
-
 O projeto SNIIC 2.0 é ambicioso mas absolutamente viável com a stack recomendada. A escolha de **PostgreSQL + pgvector** como base unificada oferece:
 
 ✅ Menor complexidade operacional  
@@ -98,7 +94,6 @@ O Agentic RAG com Router + Vector Search + SQL Agent permitirá responder tanto 
 
 ---
 
----
 .......FALTA !...... (LQMC)
 
 
@@ -248,7 +243,7 @@ Proposta de inovação integrada ao SNIIC 2.0.
 
 ---
 
-Checklist Extração:
+## Checklist Extração:
 
  Implementar extração de PDFs
  Implementar extração de Excel/CSV
@@ -257,7 +252,7 @@ Checklist Extração:
  Adicionar tratamento de erros e logs
  Criar testes unitários para cada ingressor
 
-Processamento e Limpeza
+## Processamento e Limpeza
 
  Normalização de Texto
  Remover caracteres especiais
@@ -274,7 +269,7 @@ Processamento e Limpeza
  Detecção de chunks duplicados
  Verificação de encoding corrompido
 
-Checklist Embeddings:
+## Checklist Embeddings:
 
  Escolher modelo de embedding
  Testar qualidade em português jurídico
@@ -285,7 +280,7 @@ Checklist Embeddings:
  Implementar retry logic para falhas
  Monitorar uso de memória
 
- Checklist Carregamento:
+ ## Checklist Carregamento:
 
  Implementar bulk insert (não um por um!)
  Adicionar detecção de duplicatas (hash)
@@ -294,7 +289,7 @@ Checklist Embeddings:
  Logging detalhado de cada carga
  Métricas: tempo de carga, registros inseridos/falhados
 
- Checklist Busca Vetorial:
+ ## Checklist Busca Vetorial:
 
  Implementar busca básica por similaridade
  Adicionar filtros de metadados (tipo, UF, área)
@@ -303,7 +298,7 @@ Checklist Embeddings:
  Implementar cache de queries frequentes
  Logging de todas as buscas (analytics)
 
- Checklist SQL Agent:
+ ## Checklist SQL Agent:
 
  Configurar LLM (Gemini 1.5 Flash recomendado)
  Criar system prompt robusto com:
@@ -316,7 +311,7 @@ Checklist Embeddings:
  Logging de todas queries geradas
  Testes com perguntas complexas
 
- Checklist Router:
+ ## Checklist Router:
 
  Implementar classificação de intenção
  Testar com 100+ perguntas variadas
@@ -325,7 +320,7 @@ Checklist Embeddings:
  Logging de todas decisões de roteamento
  Métricas: taxa de acerto do router
 
- Checklist Reranker:
+ ## Checklist Reranker:
 
  Escolher modelo de reranking
  Integrar após busca vetorial inicial
@@ -333,7 +328,6 @@ Checklist Embeddings:
  Otimizar threshold de reranking score
  Monitorar impacto na latência
 
- 
  
 ## Licença
 
@@ -345,6 +339,7 @@ MIT (pode ser ajustada conforme orientação do MinC).
 
 Coordenação-Geral de Informações e Indicadores Culturais (CGIIC)
 Ministério da Cultura
+
 
 
 
