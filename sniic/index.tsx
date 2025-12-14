@@ -288,17 +288,12 @@ Como assistente de áudio, mantenho respostas objetivas e informativas, citando 
       <div style="position: absolute; top: 2rem; left: 2rem; z-index: 10; color: white;">
         <h1 style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">SNIIC</h1>
         <p style="font-size: 0.875rem; opacity: 0.8;">Sistema Nacional de Informações e Indicadores Culturais</p>
-        <p style="font-size: 0.75rem; opacity: 0.6; margin-top: 0.5rem;">Esfera Cultural Brasileira</p>
       </div>
 
       <!-- Legenda dos elementos visuais -->
       <div style="position: absolute; bottom: 2rem; left: 2rem; z-index: 10; color: white; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px); padding: 1rem; border-radius: 0.5rem; max-width: 20rem; font-size: 0.75rem;">
-        <p style="margin-bottom: 0.5rem; font-weight: 600;">Elementos Visuais:</p>
+        <p style="margin-bottom: 0.5rem; font-weight: 600;">Assistente Cultural Nacional</p>
         <ul style="list-style: none; padding: 0; margin: 0; opacity: 0.8; line-height: 1.5;">
-          <li>• Padrões de cestaria indígena</li>
-          <li>• Grafismos geométricos tradicionais</li>
-          <li>• Cores da bandeira nacional</li>
-          <li>• Partículas representando dados culturais</li>
         </ul>
       </div>
 
