@@ -3,61 +3,46 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// tslint:disable:organize-imports
-// tslint:disable:ban-malformed-import-paths
-// tslint:disable:no-new-decorators
-
-import {LitElement, css, html} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
-import {Analyser} from './analyser';
+import { LitElement, css, html } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { Analyser } from './analyser';
 
 import * as THREE from 'three';
-import {EXRLoader} from 'three/addons/loaders/EXRLoader.js';
-import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
-import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
-import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
-import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
-import {FXAAShader} from 'three/addons/shaders/FXAAShader.js';
-import {fs as backdropFS, vs as backdropVS} from './backdrop-shader';
-import {vs as sphereVS} from './sphere-shader';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { createMandalaLayers, mandalaColors } from './mandala-geometry';
 
-/**
- * 3D live audio visual.
- */
 @customElement('gdm-live-audio-visuals-3d')
 export class GdmLiveAudioVisuals3D extends LitElement {
   private inputAnalyser!: Analyser;
   private outputAnalyser!: Analyser;
   private camera!: THREE.PerspectiveCamera;
-  private backdrop!: THREE.Mesh;
   private composer!: EffectComposer;
-  private sphere!: THREE.Mesh;
+  private mandalaGroup!: THREE.Group;
+  private centerCircle!: THREE.Mesh;
+  private rings!: THREE.Mesh[];
+  private petalGroup!: THREE.Group;
+  private triangleGroup!: THREE.Group;
+  private lineGroup!: THREE.Group;
+  private particles!: THREE.Points;
   private prevTime = 0;
-  private rotation = new THREE.Vector3(0, 0, 0);
 
   private _outputNode!: AudioNode;
-
   @property()
   set outputNode(node: AudioNode) {
     this._outputNode = node;
     this.outputAnalyser = new Analyser(this._outputNode);
   }
-
-  get outputNode() {
-    return this._outputNode;
-  }
+  get outputNode() { return this._outputNode; }
 
   private _inputNode!: AudioNode;
-
   @property()
   set inputNode(node: AudioNode) {
     this._inputNode = node;
     this.inputAnalyser = new Analyser(this._inputNode);
   }
-
-  get inputNode() {
-    return this._inputNode;
-  }
+  get inputNode() { return this._inputNode; }
 
   private canvas!: HTMLCanvasElement;
 
@@ -67,7 +52,6 @@ export class GdmLiveAudioVisuals3D extends LitElement {
       height: 100% !important;
       position: absolute;
       inset: 0;
-      image-rendering: pixelated;
     }
   `;
 
@@ -77,112 +61,119 @@ export class GdmLiveAudioVisuals3D extends LitElement {
 
   private init() {
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x100c14);
+    scene.background = new THREE.Color(0x001F3F);
 
-    const backdrop = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(10, 5),
-      new THREE.RawShaderMaterial({
-        uniforms: {
-          resolution: {value: new THREE.Vector2(1, 1)},
-          rand: {value: 0},
-        },
-        vertexShader: backdropVS,
-        fragmentShader: backdropFS,
-        glslVersion: THREE.GLSL3,
-      }),
-    );
-    backdrop.material.side = THREE.BackSide;
-    scene.add(backdrop);
-    this.backdrop = backdrop;
-
+    // Câmera
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
       0.1,
-      1000,
+      1000
     );
-    camera.position.set(2, -2, 5);
+    camera.position.set(0, 0, 8);
     this.camera = camera;
 
+    // Renderer
     const renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
-      antialias: !true,
+      antialias: true
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio / 1);
+    renderer.setPixelRatio(window.devicePixelRatio);
 
-    const geometry = new THREE.IcosahedronGeometry(1, 10);
+    // Iluminação
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
 
-    new EXRLoader().load('piz_compressed.exr', (texture: THREE.Texture) => {
-      texture.mapping = THREE.EquirectangularReflectionMapping;
-      const exrCubeRenderTarget = pmremGenerator.fromEquirectangular(texture);
-      sphereMaterial.envMap = exrCubeRenderTarget.texture;
-      sphere.visible = true;
+    const greenLight = new THREE.PointLight(mandalaColors.verde, 4, 20);
+    greenLight.position.set(3, 3, 5);
+    scene.add(greenLight);
+
+    const yellowLight = new THREE.PointLight(mandalaColors.amarelo, 4, 20);
+    yellowLight.position.set(-3, -3, 5);
+    scene.add(yellowLight);
+
+    const blueLight = new THREE.PointLight(mandalaColors.azul, 3, 20);
+    blueLight.position.set(0, 0, 8);
+    scene.add(blueLight);
+
+    // Criar mandala
+    const mandalaLayers = createMandalaLayers(scene);
+    this.mandalaGroup = mandalaLayers.mandalaGroup;
+    this.centerCircle = mandalaLayers.centerCircle;
+    this.rings = mandalaLayers.rings;
+    this.petalGroup = mandalaLayers.petalGroup;
+    this.triangleGroup = mandalaLayers.triangleGroup;
+    this.lineGroup = mandalaLayers.lineGroup;
+
+    scene.add(this.mandalaGroup);
+
+    // Partículas orbitais
+    const particlesGeometry = new THREE.BufferGeometry();
+    const particlesCount = 500;
+    const positions = new Float32Array(particlesCount * 3);
+    const colors = new Float32Array(particlesCount * 3);
+
+    const colorArray = [
+      mandalaColors.verde,
+      mandalaColors.azul,
+      mandalaColors.amarelo,
+      mandalaColors.coral,
+      mandalaColors.turquesa
+    ];
+
+    for (let i = 0; i < particlesCount; i++) {
+      const i3 = i * 3;
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 5 + Math.random() * 2;
+
+      positions[i3] = Math.cos(angle) * radius;
+      positions[i3 + 1] = Math.sin(angle) * radius;
+      positions[i3 + 2] = (Math.random() - 0.5) * 2;
+
+      const color = new THREE.Color(colorArray[Math.floor(Math.random() * colorArray.length)]);
+      colors[i3] = color.r;
+      colors[i3 + 1] = color.g;
+      colors[i3 + 2] = color.b;
+    }
+
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const particlesMaterial = new THREE.PointsMaterial({
+      size: 0.08,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending
     });
 
-    const pmremGenerator = new THREE.PMREMGenerator(renderer);
-    pmremGenerator.compileEquirectangularShader();
+    this.particles = new THREE.Points(particlesGeometry, particlesMaterial);
+    scene.add(this.particles);
 
-    const sphereMaterial = new THREE.MeshStandardMaterial({
-      color: 0x000010,
-      metalness: 0.5,
-      roughness: 0.1,
-      emissive: 0x000010,
-      emissiveIntensity: 1.5,
-    });
-
-    sphereMaterial.onBeforeCompile = (shader) => {
-      shader.uniforms.time = {value: 0};
-      shader.uniforms.inputData = {value: new THREE.Vector4()};
-      shader.uniforms.outputData = {value: new THREE.Vector4()};
-
-      sphereMaterial.userData.shader = shader;
-
-      shader.vertexShader = sphereVS;
-    };
-
-    const sphere = new THREE.Mesh(geometry, sphereMaterial);
-    scene.add(sphere);
-    sphere.visible = false;
-
-    this.sphere = sphere;
-
+    // Post-processing
     const renderPass = new RenderPass(scene, camera);
-
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(window.innerWidth, window.innerHeight),
-      5,
-      0.5,
-      0,
+      1.5,
+      0.4,
+      0.85
     );
-
-    const fxaaPass = new ShaderPass(FXAAShader);
 
     const composer = new EffectComposer(renderer);
     composer.addPass(renderPass);
-    // composer.addPass(fxaaPass);
     composer.addPass(bloomPass);
-
     this.composer = composer;
 
-    function onWindowResize() {
+    // Resize
+    const onWindowResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
-      const dPR = renderer.getPixelRatio();
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      backdrop.material.uniforms.resolution.value.set(w * dPR, h * dPR);
-      renderer.setSize(w, h);
-      composer.setSize(w, h);
-      fxaaPass.material.uniforms['resolution'].value.set(
-        1 / (w * dPR),
-        1 / (h * dPR),
-      );
-    }
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+    };
 
     window.addEventListener('resize', onWindowResize);
-    onWindowResize();
-
     this.animation();
   }
 
@@ -195,48 +186,103 @@ export class GdmLiveAudioVisuals3D extends LitElement {
     const t = performance.now();
     const dt = (t - this.prevTime) / (1000 / 60);
     this.prevTime = t;
-    const backdropMaterial = this.backdrop.material as THREE.RawShaderMaterial;
-    const sphereMaterial = this.sphere.material as THREE.MeshStandardMaterial;
 
-    backdropMaterial.uniforms.rand.value = Math.random() * 10000;
+    // Calcular intensidades de áudio
+    const inputAvg = this.inputAnalyser.data.reduce((a, b) => a + b, 0) / this.inputAnalyser.data.length;
+    const outputAvg = this.outputAnalyser.data.reduce((a, b) => a + b, 0) / this.outputAnalyser.data.length;
 
-    if (sphereMaterial.userData.shader) {
-      this.sphere.scale.setScalar(
-        1 + (0.2 * this.outputAnalyser.data[1]) / 255,
-      );
+    // Normalizar valores (0 a 1)
+    const inputIntensity = inputAvg / 255;
+    const outputIntensity = outputAvg / 255;
 
-      const f = 0.001;
-      this.rotation.x += (dt * f * 0.5 * this.outputAnalyser.data[1]) / 255;
-      this.rotation.z += (dt * f * 0.5 * this.inputAnalyser.data[1]) / 255;
-      this.rotation.y += (dt * f * 0.25 * this.inputAnalyser.data[2]) / 255;
-      this.rotation.y += (dt * f * 0.25 * this.outputAnalyser.data[2]) / 255;
+    // Intensidade combinada para pulsação geral
+    const totalIntensity = Math.max(inputIntensity, outputIntensity);
 
-      const euler = new THREE.Euler(
-        this.rotation.x,
-        this.rotation.y,
-        this.rotation.z,
-      );
-      const quaternion = new THREE.Quaternion().setFromEuler(euler);
-      const vector = new THREE.Vector3(0, 0, 5);
-      vector.applyQuaternion(quaternion);
-      this.camera.position.copy(vector);
-      this.camera.lookAt(this.sphere.position);
+    // ===== ROTAÇÃO GERAL DA MANDALA =====
+    const rotationSpeed = 0.002 + (0.003 * totalIntensity);
+    this.mandalaGroup.rotation.z += rotationSpeed;
 
-      sphereMaterial.userData.shader.uniforms.time.value +=
-        (dt * 0.1 * this.outputAnalyser.data[0]) / 255;
-      sphereMaterial.userData.shader.uniforms.inputData.value.set(
-        (1 * this.inputAnalyser.data[0]) / 255,
-        (0.1 * this.inputAnalyser.data[1]) / 255,
-        (10 * this.inputAnalyser.data[2]) / 255,
-        0,
-      );
-      sphereMaterial.userData.shader.uniforms.outputData.value.set(
-        (2 * this.outputAnalyser.data[0]) / 255,
-        (0.1 * this.outputAnalyser.data[1]) / 255,
-        (10 * this.outputAnalyser.data[2]) / 255,
-        0,
-      );
-    }
+    // ===== PULSAÇÃO DO CENTRO (mais intensa) =====
+    const centerBasePulse = 1 + Math.sin(t * 0.003) * 0.1;
+    const centerAudioPulse = 1 + (inputIntensity * 0.4) + (outputIntensity * 0.6);
+    const centerScale = centerBasePulse * centerAudioPulse;
+    this.centerCircle.scale.setScalar(centerScale);
+
+    // Brilho do centro
+    const centerMaterial = this.centerCircle.material as THREE.MeshPhongMaterial;
+    centerMaterial.emissiveIntensity = 0.8 + (totalIntensity * 0.5);
+
+    // ===== PULSAÇÃO DOS ANÉIS (5 regiões) =====
+    this.rings.forEach((ring, i) => {
+      // Rotação alternada + aceleração com áudio
+      const rotationDir = i % 2 === 0 ? 1 : -1;
+      const audioBoost = 1 + (totalIntensity * 2);
+      ring.rotation.z += rotationDir * 0.003 * audioBoost;
+
+      // Escala individual baseada em frequências específicas
+      const audioIndex = i % this.outputAnalyser.data.length;
+      const ringAudioIntensity = this.outputAnalyser.data[audioIndex] / 255;
+      const ringScale = 1 + (ringAudioIntensity * 0.3) + (totalIntensity * 0.2);
+      ring.scale.setScalar(ringScale);
+
+      // Brilho do anel
+      const material = ring.material as THREE.MeshPhongMaterial;
+      material.emissiveIntensity = 0.4 + (ringAudioIntensity * 0.4) + (totalIntensity * 0.3);
+
+      // Opacidade pulsante
+      material.opacity = 0.7 + (ringAudioIntensity * 0.3);
+    });
+
+    // ===== PULSAÇÃO DAS PÉTALAS (cestaria) =====
+    this.petalGroup.children.forEach((petal, i) => {
+      const audioIndex = i % this.inputAnalyser.data.length;
+      const petalInputIntensity = this.inputAnalyser.data[audioIndex] / 255;
+
+      // Escala forte quando você fala
+      const petalScale = 1 + (petalInputIntensity * 0.5) + (totalIntensity * 0.3);
+      petal.scale.setScalar(petalScale);
+
+      // Brilho
+      const material = petal.material as THREE.MeshPhongMaterial;
+      material.emissiveIntensity = 0.3 + (petalInputIntensity * 0.5) + (totalIntensity * 0.2);
+    });
+
+    // ===== PULSAÇÃO DOS TRIÂNGULOS (grafismos) =====
+    this.triangleGroup.rotation.z -= 0.001 * (1 + totalIntensity * 3);
+
+    this.triangleGroup.children.forEach((triangle, i) => {
+      const audioIndex = i % this.outputAnalyser.data.length;
+      const triangleOutputIntensity = this.outputAnalyser.data[audioIndex] / 255;
+
+      // Escala forte quando ela responde
+      const triangleScale = 1 + (triangleOutputIntensity * 0.4) + (totalIntensity * 0.25);
+      triangle.scale.setScalar(triangleScale);
+
+      // Brilho intenso
+      const material = triangle.material as THREE.MeshPhongMaterial;
+      material.emissiveIntensity = 0.3 + (triangleOutputIntensity * 0.6) + (totalIntensity * 0.3);
+    });
+
+    // ===== LINHAS RADIAIS (conexões) =====
+    this.lineGroup.rotation.z += 0.0005 * (1 + totalIntensity * 2);
+
+    // Opacidade das linhas baseada no áudio
+    this.lineGroup.children.forEach((line) => {
+      const material = line.material as THREE.LineBasicMaterial;
+      material.opacity = 0.15 + (totalIntensity * 0.3);
+    });
+
+    // ===== PARTÍCULAS (dados culturais) =====
+    this.particles.rotation.z += 0.001 + (0.004 * totalIntensity);
+
+    // Tamanho das partículas
+    const particlesMaterial = this.particles.material as THREE.PointsMaterial;
+    particlesMaterial.size = 0.08 + (totalIntensity * 0.08);
+    particlesMaterial.opacity = 0.8 + (totalIntensity * 0.2);
+
+    // ===== ESCALA GERAL DA MANDALA (pulsação master) =====
+    const mandalaGlobalScale = 1 + (totalIntensity * 0.15);
+    this.mandalaGroup.scale.setScalar(mandalaGlobalScale);
 
     this.composer.render();
   }
